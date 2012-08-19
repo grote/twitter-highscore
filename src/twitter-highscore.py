@@ -145,7 +145,7 @@ def print_user_page(user, score):
     f.write('<div class="box">')
     f.write('<img src="' + user['profile_image_url'].replace('_normal.', '.') + '"/>')
     f.write('<div class="user">')
-    f.write('<div class="big">' + user['name'].encode('ascii', 'xmlcharrefreplace') + ' (<a href="https://twitter.com/' + user['screen_name'] + '">' + user['screen_name'] + '</a>)</div>')
+    f.write('<div class="big">' + user['name'].encode('ascii', 'xmlcharrefreplace') + ' (<a href="https://twitter.com/' + user['screen_name'] + '">@' + user['screen_name'] + '</a>)</div>')
     f.write('<div>ist auf Platz <b class="big">' + str(score) + '</b> mit <b class="big">' + str(user['count']) + '</b> Followern.</div>')
     f.write('<div class="bio">' + user['description'].encode('ascii', 'xmlcharrefreplace') + '</div>')
     f.write('<div>' + user['location'].encode('ascii', 'xmlcharrefreplace') + '</div>')
