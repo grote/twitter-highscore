@@ -169,8 +169,8 @@ def print_user_page(user, score):
 
         f.write('''var graph = new Rickshaw.Graph( {
         element: document.querySelector("#chart"),
-        width: 540,
-        height: 240,
+        width: 600,
+        height: 300,
         renderer: 'line',
         min: 'auto',
         series: [ {
@@ -211,22 +211,13 @@ def print_header(f, title):
     f.write('<html>');
     f.write('<head>');
     f.write('<title>' + title + '</title>');
-    f.write('<link rel="stylesheet" href="/style.css">');
+    f.write('<link rel="stylesheet" href="/css/style.css">');
 
     if(config.getboolean('Twitter Highscore', 'draw_charts')):
         f.write('<link rel="stylesheet" href="/css/rickshaw.min.css">')
         f.write('<script src="/js/d3.min.js"></script>')
         f.write('<script src="/js/d3.layout.min.js"></script>')
         f.write('<script src="/js/rickshaw.js"></script>')
-        f.write('<style>')
-        f.write('#chart_container { background-color: #FFFFFF; position: relative; font-family: Arial, Helvetica, sans-serif; clear: both; display: inline-block; margin-top: 2em;}')
-        f.write('#chart { position: relative; left: 40px; }')
-        f.write('#y_axis { position: absolute; width: 40px;}')# top: 0; bottom: 0; }')
-        f.write('.rickshaw_graph .detail .x_label { display: none }')
-        f.write('.rickshaw_graph .detail .item { line-height: 1.4; padding: 0.5em }')
-        f.write('.detail_swatch { float: right; display: inline-block; width: 10px; height: 10px; margin: 0 4px 0 0 }')
-        f.write('.rickshaw_graph .detail .date { color: #a0a0a0 }')
-        f.write('</style>')
 
     f.write('</head>');
     f.write('<body>');
