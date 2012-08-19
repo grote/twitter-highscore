@@ -20,7 +20,8 @@ parser.add_option("-d", "--delete", dest="delete", action="store_true", help="De
 parser.add_option("-u", "--update", dest="update", action="store_true", help="Update the database from Twitter and rebuild.")
 parser.add_option("-b", "--build",  dest="build",  action="store_true", help="Only build the HTML pages.")
 parser.add_option("-t", "--tweet",  dest="tweet",  action="store_true", help="Tweet to notify added or removed users.")
-parser.add_option("", "--debug",  dest="debug",  action="store_true", help="Print debugging output.")
+parser.add_option("-s", "--silent", dest="silent", action="store_true", help="Don't produce any output.")
+parser.add_option("", "--debug",    dest="debug",  action="store_true", help="Print debugging output.")
 #parser.add_option("-x", "--test",  dest="test",  action="store_true", help="Test.")
 (opt, args) = parser.parse_args()
 
@@ -122,9 +123,11 @@ def print_highscore(highscore):
     if(opt.tweet):
         text = 'Neues Update von http://sexypirates.org Die 42 ist @%s #sexypirates' % highscore[41]['screen_name']
         api.PostUpdates(text)
-        print 'Tweeted "' + text + '".'
+        if(not opt.silent):
+            print 'Tweeted "' + text + '".'
 
-    print "The web sites have been rebuilt!"
+    if(not opt.silent):
+        print "The web sites have been rebuilt!"
 
 
 def print_user_page(user, score):
@@ -152,7 +155,7 @@ def print_user_page(user, score):
     if(user['url']):
         f.write('<div><a href="' + user['url'] + '">' + user['url'] + '</a></div>')
     f.write('</div><br/>')
-    if(False):
+    if(config.getboolean('Twitter Highscore', 'draw_charts')):
         f.write('<div id="chart_container"><div id="y_axis"></div><div id="chart"></div></div>');
     f.write('</div><br/>')
     f.write('<div class="footer">')
@@ -160,7 +163,7 @@ def print_user_page(user, score):
     f.write('Letztes Update am ' + str(user['fetch_time']) + '.')
     f.write('</div>')
 
-    if(False):
+    if(config.getboolean('Twitter Highscore', 'draw_charts')):
         f.write('<script>')
         f.write('data = ' + json.dumps(series) +';')
 
@@ -183,7 +186,6 @@ var y_axis = new Rickshaw.Graph.Axis.Y( {
         graph: graph,
         orientation: 'left',
         tickFormat: Rickshaw.Fixtures.Number.formatKMBT,
-        pixelsPerTick: 20,
         element: document.getElementById('y_axis'),
 } );
 
@@ -211,7 +213,7 @@ def print_header(f, title):
     f.write('<title>' + title + '</title>');
     f.write('<link rel="stylesheet" href="/style.css">');
 
-    if(False):
+    if(config.getboolean('Twitter Highscore', 'draw_charts')):
         f.write('<link rel="stylesheet" href="/css/rickshaw.min.css">')
         f.write('<script src="/js/d3.min.js"></script>')
         f.write('<script src="/js/d3.layout.min.js"></script>')
@@ -235,14 +237,18 @@ def print_header(f, title):
 
 
 def print_footer(f):
-    f.write('<script src="http://www.bastard.in-berlin.de/stats/piwik.js" type="text/javascript"></script>')
-    f.write('<script type="text/javascript">')
-    f.write('var pkBaseURL = "http://www.bastard.in-berlin.de/stats/";')
-    f.write('var piwikTracker = Piwik.getTracker(pkBaseURL + "piwik.php", 5);')
-    f.write('piwikTracker.trackPageView();')
-    f.write('piwikTracker.enableLinkTracking();')
-    f.write('</script>')
-    f.write('<noscript><p><img src="http://www.bastard.in-berlin.de/stats/piwik.php?idsite=5" style="border:0" alt="" /></p></noscript>')
+    if(config.getboolean('Piwik', 'tracking')):
+        f.write('<script src="' + config.get('Piwik', 'base_url') +'piwik.js" type="text/javascript"></script>')
+        f.write('<script type="text/javascript">')
+        f.write('var pkBaseURL = "' + config.get('Piwik', 'base_url') + '";')
+        f.write('var piwikTracker = Piwik.getTracker(pkBaseURL + "piwik.php", ' + config.get('Piwik', 'idsite') + ');')
+        f.write('piwikTracker.trackPageView();')
+        f.write('piwikTracker.enableLinkTracking();')
+        f.write('</script>')
+        f.write('<noscript><p>')
+        f.write('<img src="' + config.get('Piwik', 'base_url') + 'piwik.php?idsite=' + config.get('Piwik', 'idsite') + '" style="border:0" alt="" />')
+        f.write('</p></noscript>')
+
     f.write('</body>')
     f.write('</html>')
 
@@ -264,7 +270,7 @@ def update_users():
         # select all entries older than %d days and use 10 minutes flexibility
         cursor.execute("SELECT `id` FROM `users`\
                 WHERE TIMESTAMPADD(DAY, -%d, TIMESTAMPADD(MINUTE, 10, NOW())) >= `fetch_time`\
-                LIMIT %d" % (int(config.get('Twitter Highscore', 'fetch_interval')), limit) )
+                LIMIT %d" % (config.getint('Twitter Highscore', 'fetch_interval'), limit) )
         rows = cursor.fetchall()
     except MySQLdb.IntegrityError, msg:
         print msg
@@ -287,7 +293,8 @@ def add_followers_count(user_id):
                 `description`=%(_description)s, `profile_image_url`=%(_profile_image_url)s, `url`=%(_url)s,\
                 `fetch_time`=NOW() WHERE `id` = %(_id)s", user.__dict__)
 
-        print "Entry for " + user.screen_name + " added with " + str(user.followers_count) + " followers."
+        if(not opt.silent):
+            print "Entry for " + user.screen_name + " added with " + str(user.followers_count) + " followers."
     except MySQLdb.IntegrityError, msg:
         print msg
 
@@ -302,12 +309,14 @@ def add_user(user_id):
         cursor.execute("""INSERT INTO `followers` (`id`, `count`, `fetch_time`)\
                 VALUES (%(_id)s, %(_followers_count)s, NOW())""", user.__dict__)
 
-        print 'New entry for ' + user.screen_name + ' added.'
+        if(not opt.silent):
+            print 'New entry for ' + user.screen_name + ' added.'
         
         if(opt.tweet):
             text = '@' + user.screen_name + ' Du bist jetzt auch einer von den #sexypirates http://sexypirates.org'
             api.PostUpdates(text)
-            print 'Tweeted "' + text + '".'
+            if(not opt.silent):
+                print 'Tweeted "' + text + '".'
     except MySQLdb.IntegrityError, msg:
         if(msg[0] == 1062):
             print 'This user was already added.'
@@ -322,12 +331,14 @@ def del_user(user_id):
         cursor.execute("DELETE FROM `users` WHERE `id` = %(_id)s", user.__dict__)
         cursor.execute("DELETE FROM `followers` WHERE `id` = %(_id)s", user.__dict__)
 
-        print user.screen_name + ' was removed.'
+        if(not opt.silent):
+            print user.screen_name + ' was removed.'
         
         if(opt.tweet):
             text = '@' + user.screen_name + ' Du bist jetzt aus http://sexypirates.org raus. #sexypirates'
             api.PostUpdates(text)
-            print 'Tweeted "' + text + '".'
+            if(not opt.silent):
+                print 'Tweeted "' + text + '".'
     except MySQLdb.IntegrityError, msg:
         print msg
     
