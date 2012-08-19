@@ -152,7 +152,8 @@ def print_user_page(user, score):
     if(user['url']):
         f.write('<div><a href="' + user['url'] + '">' + user['url'] + '</a></div>')
     f.write('</div><br/>')
-#    f.write('<div id="chart_container"><div id="y_axis"></div><div id="chart"></div></div>');
+    if(False):
+        f.write('<div id="chart_container"><div id="y_axis"></div><div id="chart"></div></div>');
     f.write('</div><br/>')
     f.write('<div class="footer">')
     f.write('Du m&ouml;chtest nicht hier stehen? Sag <a href="http://twitter.com/t_grote">@t_grote</a> Bescheid!<br/>')
@@ -168,6 +169,7 @@ def print_user_page(user, score):
         width: 540,
         height: 240,
         renderer: 'line',
+        min: 'auto',
         series: [ {
                 data: data, 
                 color: 'steelblue',
