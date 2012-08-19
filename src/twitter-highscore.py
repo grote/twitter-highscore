@@ -114,8 +114,8 @@ def print_highscore(highscore):
 
     f.write("</table>")
     f.write('<div class="footer">Du bist Piratin, fehlst aber auf dieser Liste? Sag <a href="http://twitter.com/t_grote">@t_grote</a> Bescheid!</div>')
-    f.write('</body>')
-    f.write('</html>')
+
+    print_footer(f)
 
     f.close()
     
@@ -199,9 +199,7 @@ var hoverDetail = new Rickshaw.Graph.HoverDetail( {
 
 </script>''')
 
-    f.write('</body>')
-    f.write('</html>')
-
+    print_footer(f)
     f.close()
 
 
@@ -232,6 +230,19 @@ def print_header(f, title):
     f.write('<span id="headline"><a href="/">Who Are The Sexiest Pirates?</a></span>')
     f.write('<br/><span id="slogan">Themen statt K&ouml;pfe!</span>')
     f.write('</div>');
+
+
+def print_footer(f):
+    f.write('<script src="http://www.bastard.in-berlin.de/stats/piwik.js" type="text/javascript"></script>')
+    f.write('<script type="text/javascript">')
+    f.write('var pkBaseURL = "http://www.bastard.in-berlin.de/stats/";')
+    f.write('var piwikTracker = Piwik.getTracker(pkBaseURL + "piwik.php", 5);')
+    f.write('piwikTracker.trackPageView();')
+    f.write('piwikTracker.enableLinkTracking();')
+    f.write('</script>')
+    f.write('<noscript><p><img src="http://www.bastard.in-berlin.de/stats/piwik.php?idsite=5" style="border:0" alt="" /></p></noscript>')
+    f.write('</body>')
+    f.write('</html>')
 
 
 def update_users():
