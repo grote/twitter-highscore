@@ -131,15 +131,16 @@ def print_highscore(highscore):
 
 
 def print_user_page(user, score):
-    try:
-        cursor.execute("SELECT `count`, `fetch_time` FROM `followers` WHERE `id` = %(id)s", user)
-        rows = cursor.fetchall()
-    except MySQLdb.IntegrityError, msg:
-        print msg   
+    if(config.getboolean('Twitter Highscore', 'draw_charts')):
+        try:
+            cursor.execute("SELECT `count`, `fetch_time` FROM `followers` WHERE `id` = %(id)s", user)
+            rows = cursor.fetchall()
+        except MySQLdb.IntegrityError, msg:
+            print msg
 
-    series = []
-    for row in rows:
-        series.append( {'x': time.mktime(row['fetch_time'].timetuple()), 'y': row['count']} )
+        series = []
+        for row in rows:
+            series.append( {'x': time.mktime(row['fetch_time'].timetuple()), 'y': row['count']} )
     
     f = open(config.get('Twitter Highscore', 'document_root')+'/user/'+user['screen_name']+'.html', "w")
 
@@ -155,7 +156,7 @@ def print_user_page(user, score):
     if(user['url']):
         f.write('<div><a href="' + user['url'] + '">' + user['url'] + '</a></div>')
     f.write('</div><br/>')
-    if(config.getboolean('Twitter Highscore', 'draw_charts')):
+    if(config.getboolean('Twitter Highscore', 'draw_charts') and len(series) > 1):
         f.write('<div id="chart_container"><div id="y_axis"></div><div id="chart"></div></div>');
     f.write('</div><br/>')
     f.write('<div class="footer">')
@@ -163,7 +164,7 @@ def print_user_page(user, score):
     f.write('Letztes Update am ' + str(user['fetch_time']) + '.')
     f.write('</div>')
 
-    if(config.getboolean('Twitter Highscore', 'draw_charts')):
+    if(config.getboolean('Twitter Highscore', 'draw_charts') and len(series) > 1):
         f.write('<script>')
         f.write('data = ' + json.dumps(series) +';')
 
@@ -292,6 +293,9 @@ def add_followers_count(user_id):
 
 def add_user(user_id):
     user = api.GetUser(user_id)
+    # TODO add these to database
+    # print user.created_at # user.GetCreatedAt()
+    # print user.statuses_count #user.GetStatusesCount()
 
     try:
         cursor.execute("""INSERT INTO `users` (`id`, `screen_name`, `name`, `location`, `description`, `profile_image_url`, `url`, `fetch_time`)\
