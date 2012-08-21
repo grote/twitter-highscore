@@ -84,7 +84,8 @@ def build_pages():
 
 def get_highscore():
     try:
-        cursor.execute("SELECT `users`.`id`, `screen_name`, `count`, `name`, `description`, `location`, `profile_image_url`, `url`, `users`.`fetch_time`\
+        cursor.execute("SELECT `users`.`id`, `screen_name`, `count`, `name`, `description`, `location`,\
+                `profile_image_url`, `url`, `statuses_count`, `created_at`, `users`.`fetch_time`\
                 FROM `followers`, `users`\
                 WHERE `followers`.`id` = `users`.`id` AND `key_id` IN (SELECT MAX(`key_id`) FROM `followers` GROUP BY `id`)\
                 ORDER BY `count` DESC")
@@ -247,6 +248,7 @@ def print_footer(f):
 
 def update_users():
     limit = api.GetRateLimitStatus()['remaining_hits']
+    # TODO use API function to look up 100 users with one API call
 
     if(limit <= 1):
         secs = get_twitter_reset_time()
@@ -283,7 +285,7 @@ def add_followers_count(user_id):
 
         cursor.execute("UPDATE `users` SET `screen_name`=%(_screen_name)s, `name`=%(_name)s, `location`=%(_location)s,\
                 `description`=%(_description)s, `profile_image_url`=%(_profile_image_url)s, `url`=%(_url)s,\
-                `fetch_time`=NOW() WHERE `id` = %(_id)s", user.__dict__)
+                `statuses_count`=%(_statuses_count)s, `fetch_time`=NOW() WHERE `id` = %(_id)s", user.__dict__)
 
         if(not opt.silent):
             print "Entry for " + user.screen_name + " added with " + str(user.followers_count) + " followers."
@@ -293,13 +295,15 @@ def add_followers_count(user_id):
 
 def add_user(user_id):
     user = api.GetUser(user_id)
-    # TODO add these to database
-    # print user.created_at # user.GetCreatedAt()
-    # print user.statuses_count #user.GetStatusesCount()
+
+    # transform created_at datetime into proper format
+    user.created_at = datetime.datetime.strptime(user.created_at, '%a %b %d %H:%M:%S +0000 %Y').isoformat(' ')
 
     try:
-        cursor.execute("""INSERT INTO `users` (`id`, `screen_name`, `name`, `location`, `description`, `profile_image_url`, `url`, `fetch_time`)\
-                VALUES (%(_id)s, %(_screen_name)s, %(_name)s, %(_location)s, %(_description)s, %(_profile_image_url)s, %(_url)s, NOW())""", user.__dict__)
+        cursor.execute("""INSERT INTO `users` (`id`, `screen_name`, `name`, `location`,\
+                `description`, `profile_image_url`, `url`, `statuses_count`, `created_at`, `fetch_time`)\
+                VALUES (%(_id)s, %(_screen_name)s, %(_name)s, %(_location)s,\
+                %(_description)s, %(_profile_image_url)s, %(_url)s, %(_statuses_count)s, %(_created_at)s, NOW())""", user.__dict__)
         
         cursor.execute("""INSERT INTO `followers` (`id`, `count`, `fetch_time`)\
                 VALUES (%(_id)s, %(_followers_count)s, NOW())""", user.__dict__)

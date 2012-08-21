@@ -35,6 +35,8 @@ CREATE TABLE IF NOT EXISTS `users` (
   `description` varchar(512) COLLATE utf8_unicode_ci DEFAULT NULL,
   `profile_image_url` varchar(512) COLLATE utf8_unicode_ci NOT NULL,
   `url` varchar(512) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `statuses_count` int(10) unsigned NOT NULL,
+  `created_at` datetime NOT NULL,
   `fetch_time` datetime NOT NULL,
   UNIQUE KEY `id` (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
