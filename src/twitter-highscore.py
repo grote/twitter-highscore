@@ -143,6 +143,11 @@ def print_user_page(user, score):
         for row in rows:
             series.append( {'x': time.mktime(row['fetch_time'].timetuple()), 'y': row['count']} )
     
+    # calculate tweets per day
+    avg = float(user['statuses_count']) / (datetime.datetime.utcnow() - user['created_at']).days
+    avg = '%.2f' % avg
+    avg = avg.replace('.', ',')
+
     f = open(config.get('Twitter Highscore', 'document_root')+'/user/'+user['screen_name']+'.html', "w")
 
     print_header(f, 'SexyPirates.org - ' + user['screen_name'])
@@ -151,7 +156,11 @@ def print_user_page(user, score):
     f.write('<img src="' + user['profile_image_url'].replace('_normal.', '.') + '"/>')
     f.write('<div class="user">')
     f.write('<div class="big">' + user['name'].encode('ascii', 'xmlcharrefreplace') + ' (<a href="https://twitter.com/' + user['screen_name'] + '">@' + user['screen_name'] + '</a>)</div>')
-    f.write('<div>ist auf Platz <b class="big">' + str(score) + '</b> mit <b class="big">' + str(user['count']) + '</b> Followern.</div>')
+    f.write('<div>')
+    f.write('ist auf Platz <b class="big">' + str(score) + '</b> mit <b class="big">' + str(user['count']) + '</b> Followern.')
+    f.write('<p>Er ist seit dem <b>' + user['created_at'].date().strftime('%d.%m.%Y') + '</b> auf Twitter ')
+    f.write('und schreibt durchschnittlich <b>' + avg + '</b> Tweets am Tag.</p>')
+    f.write('</div>')
     f.write('<div class="bio">' + user['description'].encode('ascii', 'xmlcharrefreplace') + '</div>')
     f.write('<div>' + user['location'].encode('ascii', 'xmlcharrefreplace') + '</div>')
     if(user['url']):
