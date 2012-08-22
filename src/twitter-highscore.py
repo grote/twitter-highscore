@@ -49,6 +49,11 @@ def main():
     if(opt.update):
         update_users()
         build_pages()
+        if(opt.tweet):
+            text = 'Neues Update von http://sexypirates.org Die 42 ist @%s #sexypirates' % highscore[41]['screen_name']
+            api.PostUpdates(text)
+            if(not opt.silent):
+                print 'Tweeted "' + text + '".'
     elif(opt.build):
         build_pages()
 #    elif(opt.test):
@@ -78,11 +83,13 @@ def main():
 
 
 def build_pages():
-    highscore = get_highscore()
-    print_highscore(highscore)
+    print_highscore(get_highscore_follower(),       print_follower_score,       '/index.html', print_users=True)
+    print_highscore(get_highscore_age(),            print_age_score,            '/sort/age.html', ' - Alter')
+    print_highscore(get_highscore_tweets(),         print_tweets_score,         '/sort/tweets.html', ' - Tweets')
+    print_highscore(get_highscore_tweets_per_day(), print_tweets_per_day_score, '/sort/tweets-per-day.html', ' - Tweets am Tag')
 
 
-def get_highscore():
+def get_highscore_follower():
     try:
         cursor.execute("SELECT `users`.`id`, `screen_name`, `count`, `name`, `description`, `location`,\
                 `profile_image_url`, `url`, `statuses_count`, `created_at`, `users`.`fetch_time`\
@@ -94,11 +101,81 @@ def get_highscore():
     except MySQLdb.IntegrityError, msg:
         print msg
 
+def print_follower_score(f, user):
+    f.write('<td class="score">' + str(user['count']) + '</td>')
 
-def print_highscore(highscore):
-    f = open(config.get('Twitter Highscore', 'document_root')+'/index.html', "w")
+
+def get_highscore_age():
+    try:
+        cursor.execute("SELECT `id`, `screen_name`, `name`, `description`, `location`,\
+                `profile_image_url`, `url`, `statuses_count`, `created_at`, `fetch_time`\
+                FROM `users`\
+                ORDER BY `created_at` ASC")
+        rows = cursor.fetchall()
+        return rows
+    except MySQLdb.IntegrityError, msg:
+        print msg
+
+def print_age_score(f, user):
+    f.write('<td class="score">' + str(user['created_at'].date().strftime('%d.%m.%Y')) + '</td>')
+
+
+def get_highscore_tweets():
+    try:
+        cursor.execute("SELECT `id`, `screen_name`, `name`, `description`, `location`,\
+                `profile_image_url`, `url`, `statuses_count`, `created_at`, `fetch_time`\
+                FROM `users`\
+                ORDER BY `statuses_count` DESC")
+        rows = cursor.fetchall()
+        return rows
+    except MySQLdb.IntegrityError, msg:
+        print msg
+
+def print_tweets_score(f, user):
+    f.write('<td class="score">' + str(user['statuses_count']) + '</td>')
+
+
+def get_highscore_tweets_per_day():
+    try:
+        cursor.execute("SELECT `id`, `screen_name`, `name`, `description`, `location`,\
+                `profile_image_url`, `url`, `statuses_count`, `created_at`, `fetch_time`,\
+                `statuses_count` / TIMESTAMPDIFF(DAY, `created_at`, NOW()) AS `tweets_per_day`\
+                FROM `users`\
+                ORDER BY `tweets_per_day` DESC")
+        rows = cursor.fetchall()
+        return rows
+    except MySQLdb.IntegrityError, msg:
+        print msg
+
+def print_tweets_per_day_score(f, user):
+    f.write('<td class="score">%.2f</td>' % user['tweets_per_day'])
+
+
+def print_highscore(highscore, print_score, path, title='', print_users=False):
+    f = open(config.get('Twitter Highscore', 'document_root') + path, "w")
     
-    print_header(f, 'SexyPirates.org')
+    print_header(f, 'SexyPirates.org' + title)
+
+    # Print Menu
+    f.write('<div class="footer">')
+    f.write('Was ist sexy? ')
+    if(print_score == print_follower_score):
+        f.write('Gefolgschaft, ')
+    else:
+        f.write('<a href="/">Gefolgschaft</a>, ')
+    if(print_score == print_age_score):
+        f.write('Alter, ')
+    else:
+        f.write('<a href="/sort/age">Alter</a>, ')
+    if(print_score == print_tweets_score):
+        f.write('viele Tweets oder ')
+    else:
+        f.write('<a href="/sort/tweets">viele Tweets</a> oder ')
+    if(print_score == print_tweets_per_day_score):
+        f.write('viele Tweets pro Tag?')
+    else:
+        f.write('<a href="/sort/tweets-per-day">viele Tweets pro Tag</a>?')
+    f.write('</div>')
 
     f.write('<table align="center">')
 
@@ -109,9 +186,10 @@ def print_highscore(highscore):
         f.write('<td class="pos">' + str(position) + '</td>')
         f.write('<td><a href="/' + user['screen_name'] + '"><img src="' + user['profile_image_url'] + '"/></a></td>')
         f.write('<td>' + user['name'].encode('ascii', 'xmlcharrefreplace') + ' (<a href="https://twitter.com/'+user['screen_name']+'">@' + user['screen_name'] + '</a>)</td>')
-        f.write('<td class="fol">' + str(user['count']) + '</td>')
+        print_score(f, user)
         f.write('</tr>')
-        print_user_page(user, position)
+        if(print_users):
+            print_user_page(user, position)
         position += 1
 
     f.write("</table>")
@@ -120,12 +198,6 @@ def print_highscore(highscore):
     print_footer(f)
 
     f.close()
-    
-    if(opt.tweet):
-        text = 'Neues Update von http://sexypirates.org Die 42 ist @%s #sexypirates' % highscore[41]['screen_name']
-        api.PostUpdates(text)
-        if(not opt.silent):
-            print 'Tweeted "' + text + '".'
 
     if(not opt.silent):
         print "The web sites have been rebuilt!"
