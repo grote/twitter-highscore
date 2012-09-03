@@ -57,6 +57,7 @@ def main():
     elif(opt.build):
         build_pages()
 #    elif(opt.test):
+#        add_followers_count('t_grote')
 #        print get_twitter_reset_time()
     elif(len(args) < 1):
         print "No arguments specified!\n"
@@ -330,6 +331,7 @@ def print_footer(f):
 def update_users():
     limit = api.GetRateLimitStatus()['remaining_hits']
     # TODO use API function to look up 100 users with one API call
+    # api.UsersLookup(user_id=[], screen_name=[])
 
     if(limit <= 1):
         secs = get_twitter_reset_time()
@@ -360,6 +362,16 @@ def update_users():
 
 def add_followers_count(user_id):
     user = api.GetUser(user_id)
+
+    # these are errors you might want to look at so don't respect --silent
+    if(user.screen_name == None):
+        print "User with id '%s' seems to be deactivated or deleted. Skipping..." % user_id
+        # TODO handle that somehow!
+        return
+    if(user.followers_count == 0):
+        print "Query for user '%s' with id '%s' has returned 0 followers. Not adding..." % (user.screen_name, user.id)
+        return
+
     try:
         cursor.execute("""INSERT INTO `followers` (`id`, `count`, `fetch_time`)\
                 VALUES (%(_id)s, %(_followers_count)s, NOW())""", user.__dict__)
