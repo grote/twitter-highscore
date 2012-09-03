@@ -10,7 +10,7 @@ import time, datetime
 import json
 
 config = ConfigParser.ConfigParser()
-config.read('/home/tovok7/sexypirates/config.ini')
+config.read('config.ini')
 
 # Parse Command Line Options
 usage = "usage: %prog option [user1] [[user2] ...]"
@@ -329,11 +329,12 @@ def print_footer(f):
 
 
 def update_users():
-    limit = api.GetRateLimitStatus()['remaining_hits']
-    # TODO use API function to look up 100 users with one API call
-    # api.UsersLookup(user_id=[], screen_name=[])
+    limit = 100
+    rate_limit = api.GetRateLimitStatus()['remaining_hits']
 
-    if(limit <= 1):
+    if(limit > rate_limit and rate_limit > 1):
+        limit = rate_limit
+    elif(rate_limit <= 1):
         secs = get_twitter_reset_time()
         if(opt.debug):
             print "Waiting for %d seconds..." % secs
@@ -346,23 +347,33 @@ def update_users():
     try:
         # select all entries older than %d days and use 10 minutes flexibility
         cursor.execute("SELECT `id` FROM `users`\
-                WHERE TIMESTAMPADD(DAY, -%d, TIMESTAMPADD(MINUTE, 10, NOW())) >= `fetch_time`\
+                WHERE TIMESTAMPADD(HOUR, -%d, TIMESTAMPADD(MINUTE, 10, NOW())) >= `fetch_time`\
                 LIMIT %d" % (config.getint('Twitter Highscore', 'fetch_interval'), limit) )
         rows = cursor.fetchall()
     except MySQLdb.IntegrityError, msg:
         print msg
 
-    for user in rows:
-        add_followers_count(user['id'])
+    # assemble list of twitter IDs
+    ids = []
+    for row in rows:
+        ids.append(row['id'])
 
-    # run again if there might be more
-    if(len(rows) >= limit):
-        update_users()
+    try:
+        users = api.UsersLookup(ids)
+
+        print "Got %d users from twitter" % len(users)
+        for user in users:
+            add_followers_count(user)
+
+        # run again if there might be more
+        if(len(rows) >= limit):
+            print "run update_users() again"
+            update_users()
+    except AttributeError, msg:
+        print "Error: Twitter API response returned no users. Maybe one was deleted or deactivated."
 
 
-def add_followers_count(user_id):
-    user = api.GetUser(user_id)
-
+def add_followers_count(user):
     # these are errors you might want to look at so don't respect --silent
     if(user.screen_name == None):
         print "User with id '%s' seems to be deactivated or deleted. Skipping..." % user_id
