@@ -60,11 +60,6 @@ def main():
     if(opt.update):
         update_users()
         build_pages()
-        if(opt.tweet):
-            text = 'Neues Update von http://sexypirates.org Die 42 ist @%s #sexypirates' % highscore[41]['screen_name']
-            api.PostUpdates(text)
-            if(not opt.silent):
-                print 'Tweeted "' + text + '".'
     elif(opt.build):
         build_pages()
 #    elif(opt.test):
@@ -80,7 +75,7 @@ def main():
             for user in args:
                 add_user(user)
                 text += '@' + user + ' '
-            print text + 'ihr seid jetzt auch #sexypirates auf http://sexypirates.org/'
+            print text + config.get('Twitter Highscore', 'tweet_add_users')
             build_pages()
         elif(opt.delete):
             for user in args:
@@ -211,6 +206,13 @@ def print_highscore(highscore, print_score, path, title='', print_users=False):
     print_footer(f)
 
     f.close()
+
+    # Tweet about the update
+    if(print_users and opt.tweet):
+        text = config.get('Twitter Highscore', 'tweet_update', raw=True) % highscore[41]['screen_name']
+        api.PostUpdates(text)
+        if(not opt.silent):
+            print 'Tweeted "' + text + '".'
 
 
 def print_user_page(user, score):
@@ -443,7 +445,7 @@ def add_user(user_id):
             print 'New entry for ' + user.screen_name + ' added.'
         
         if(opt.tweet):
-            text = '@' + user.screen_name + ' Du bist jetzt auch einer von den #sexypirates http://sexypirates.org'
+            text = '@' + user.screen_name + config.get('Twitter Highscore', 'tweet_add_user')
             api.PostUpdates(text)
             if(not opt.silent):
                 print 'Tweeted "' + text + '".'
@@ -465,7 +467,7 @@ def del_user(user_id):
             print user.screen_name + ' was removed.'
         
         if(opt.tweet):
-            text = '@' + user.screen_name + ' Du bist jetzt aus http://sexypirates.org raus. #sexypirates'
+            text = '@' + user.screen_name + config.get('Twitter Highscore', 'tweet_del_user')
             api.PostUpdates(text)
             if(not opt.silent):
                 print 'Tweeted "' + text + '".'
