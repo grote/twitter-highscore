@@ -9,8 +9,12 @@ import twitter
 import time, datetime
 import json
 
-config = ConfigParser.ConfigParser()
-config.read('config.ini')
+config = ConfigParser.SafeConfigParser()
+config.read(['config.ini', os.path.dirname(os.path.realpath(__file__))])
+
+if(not config.has_section('Twitter Highscore')):
+    print "Error: Could not find a valid 'config.ini' file."
+    sys.exit(1)
 
 # Parse Command Line Options
 usage = "usage: %prog option [user1] [[user2] ...]"
