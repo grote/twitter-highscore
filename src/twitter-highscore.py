@@ -364,6 +364,12 @@ def update_users():
     except MySQLdb.IntegrityError, msg:
         print msg
 
+    # stop if no users to update
+    if(len(rows) == 0):
+        if(not opt.silent):
+            print "No users to update. Please consider increasing fetch interval in 'config.ini'."
+        return
+
     # assemble list of twitter IDs
     ids = []
     for row in rows:
