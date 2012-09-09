@@ -10,7 +10,11 @@ import time, datetime
 import json
 
 config = ConfigParser.SafeConfigParser()
-config.read(['config.ini', os.path.dirname(os.path.realpath(__file__))])
+config_files = config.read([
+    'config.ini',                                                   # executing folder
+    os.path.dirname(os.path.realpath(__file__)) + '/config.ini',    # real folder of script
+    os.path.dirname(__file__) + '/config.ini'                       # folder of (symlinked) script
+])
 
 if(not config.has_section('Twitter Highscore')):
     print "Error: Could not find a valid 'config.ini' file."
@@ -50,6 +54,9 @@ api = twitter.Api(
 cursor = db.cursor(cursorclass=MySQLdb.cursors.DictCursor)
 
 def main():
+    if(opt.debug):
+        print "Used configuration file(s): %s" % config_files
+
     if(opt.update):
         update_users()
         build_pages()
