@@ -167,11 +167,11 @@ def print_tweets_per_day_score(f, user):
 def print_highscore(highscore, print_score, path, title='', print_users=False):
     f = open(config.get('Twitter Highscore', 'document_root') + path, "w")
     
-    print_header(f, 'SexyPirates.org' + title)
+    print_header(f, config.get('Twitter Highscore', 'site_name') + title)
 
     # Print Menu
     f.write('<div class="footer">')
-    f.write('Was ist sexy? ')
+    f.write('%s ' % config.get('Twitter Highscore', 'menu_intro'))
     if(print_score == print_follower_score):
         f.write('Gefolgschaft, ')
     else:
@@ -206,7 +206,7 @@ def print_highscore(highscore, print_score, path, title='', print_users=False):
         position += 1
 
     f.write("</table>")
-    f.write('<div class="footer">Du bist Piratin, fehlst aber auf dieser Liste? Sag <a href="http://twitter.com/t_grote">@t_grote</a> Bescheid!</div>')
+    f.write('<div class="footer">%s</div>' % config.get('Twitter Highscore', 'footer'))
 
     print_footer(f)
 
@@ -242,7 +242,7 @@ def print_user_page(user, score):
 
     f = open(config.get('Twitter Highscore', 'document_root')+'/user/'+user['screen_name']+'.html', "w")
 
-    print_header(f, 'SexyPirates.org - ' + user['screen_name'])
+    print_header(f, '%s - %s' % (config.get('Twitter Highscore', 'site_name'), user['screen_name']))
 
     f.write('<div class="box">')
     f.write('<img src="' + user['profile_image_url'].replace('_normal.', '.') + '"/>')
@@ -262,7 +262,7 @@ def print_user_page(user, score):
         f.write('<div id="chart_container"><div id="y_axis"></div><div id="chart"></div></div>');
     f.write('</div><br/>')
     f.write('<div class="footer">')
-    f.write('Du m&ouml;chtest nicht hier stehen? Sag <a href="http://twitter.com/t_grote">@t_grote</a> Bescheid!<br/>')
+    f.write('%s<br/>' % config.get('Twitter Highscore', 'profile_footer'))
     f.write('Letztes Update am ' + str(user['fetch_time']) + '.')
     f.write('</div>')
 
@@ -325,8 +325,8 @@ def print_header(f, title):
     f.write('</head>');
     f.write('<body>');
     f.write('<div class="header">');
-    f.write('<span id="headline"><a href="/">Who Are The Sexiest Pirates?</a></span>')
-    f.write('<br/><span id="slogan">Themen statt K&ouml;pfe!</span>')
+    f.write('<span id="headline"><a href="/">%s</a></span>' % config.get('Twitter Highscore', 'headline'))
+    f.write('<br/><span id="slogan">%s</span>' % config.get('Twitter Highscore', 'slogan'))
     f.write('</div>');
 
 
