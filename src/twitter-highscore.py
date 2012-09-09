@@ -103,18 +103,16 @@ def build_pages():
 
 def get_highscore_follower():
     try:
-        cursor.execute("SELECT `users`.`id`, `screen_name`, `count`, `name`, `description`, `location`,\
-                `profile_image_url`, `url`, `statuses_count`, `created_at`, `users`.`fetch_time`\
-                FROM `followers`, `users`\
-                WHERE `followers`.`id` = `users`.`id` AND `key_id` IN (SELECT MAX(`key_id`) FROM `followers` GROUP BY `id`)\
-                ORDER BY `count` DESC")
+        cursor.execute("SELECT `id`, `screen_name`, `name`, `description`, `location`, `profile_image_url`, `url`,\
+                `statuses_count`, `followers_count`, `rank`, `created_at`, `fetch_time`\
+                FROM `users` ORDER BY `followers_count` DESC")
         rows = cursor.fetchall()
         return rows
     except MySQLdb.IntegrityError, msg:
         print msg
 
 def print_follower_score(f, user):
-    f.write('<td class="score">' + str(user['count']) + '</td>')
+    f.write('<td class="score">' + str(user['followers_count']) + '</td>')
 
 
 def get_highscore_age():
@@ -216,6 +214,7 @@ def print_highscore(highscore, print_score, path, title='', print_users=False):
 
 
 def print_user_page(user, score):
+    # Get data for chart
     if(config.getboolean('Twitter Highscore', 'draw_charts')):
         try:
             cursor.execute("SELECT `count`, `fetch_time` FROM `followers` WHERE `id` = %(id)s", user)
@@ -226,6 +225,15 @@ def print_user_page(user, score):
         series = []
         for row in rows:
             series.append( {'x': time.mktime(row['fetch_time'].timetuple()), 'y': row['count']} )
+
+   # Update current score in database
+    if(config.getboolean('Twitter Highscore', 'use_rank')):
+        user['rank'] = score
+        try:
+            cursor.execute("UPDATE `users` SET `rank` = %(rank)s WHERE `id` = %(id)s", user)
+        except MySQLdb.IntegrityError, msg:
+            print msg
+
     
     # calculate tweets per day
     avg = float(user['statuses_count']) / (datetime.datetime.utcnow() - user['created_at']).days
@@ -241,7 +249,7 @@ def print_user_page(user, score):
     f.write('<div class="user">')
     f.write('<div class="big">' + user['name'].encode('ascii', 'xmlcharrefreplace') + ' (<a href="https://twitter.com/' + user['screen_name'] + '">@' + user['screen_name'] + '</a>)</div>')
     f.write('<div>')
-    f.write('ist auf Platz <b class="big">' + str(score) + '</b> mit <b class="big">' + str(user['count']) + '</b> Followern,')
+    f.write('ist auf Platz <b class="big">' + str(score) + '</b> mit <b class="big">' + str(user['followers_count']) + '</b> Followern,')
     f.write('<p>seit dem <b>' + user['created_at'].date().strftime('%d.%m.%Y') + '</b> auf Twitter ')
     f.write('und schreibt durchschnittlich <b>' + avg + '</b> Tweets am Tag.</p>')
     f.write('</div>')
@@ -356,9 +364,9 @@ def update_users():
         limit = api.GetRateLimitStatus()['remaining_hits']
 
     try:
-        # select all entries older than %d days and use 10 minutes flexibility
+        # select all entries older than %d hours
         cursor.execute("SELECT `id` FROM `users`\
-                WHERE TIMESTAMPADD(HOUR, -%d, TIMESTAMPADD(MINUTE, 10, NOW())) >= `fetch_time`\
+                WHERE TIMESTAMPADD(HOUR, -%d, NOW()) >= `fetch_time`\
                 LIMIT %d" % (config.getint('Twitter Highscore', 'fetch_interval'), limit) )
         rows = cursor.fetchall()
     except MySQLdb.IntegrityError, msg:
@@ -406,7 +414,8 @@ def add_followers_count(user):
 
         cursor.execute("UPDATE `users` SET `screen_name`=%(_screen_name)s, `name`=%(_name)s, `location`=%(_location)s,\
                 `description`=%(_description)s, `profile_image_url`=%(_profile_image_url)s, `url`=%(_url)s,\
-                `statuses_count`=%(_statuses_count)s, `fetch_time`=NOW() WHERE `id` = %(_id)s", user.__dict__)
+                `statuses_count`=%(_statuses_count)s, `followers_count`=%(_followers_count)s, `fetch_time`=NOW()\
+                WHERE `id` = %(_id)s", user.__dict__)
 
         if(not opt.silent):
             print "Entry for " + user.screen_name + " added with " + str(user.followers_count) + " followers."
@@ -424,7 +433,8 @@ def add_user(user_id):
         cursor.execute("""INSERT INTO `users` (`id`, `screen_name`, `name`, `location`,\
                 `description`, `profile_image_url`, `url`, `statuses_count`, `created_at`, `fetch_time`)\
                 VALUES (%(_id)s, %(_screen_name)s, %(_name)s, %(_location)s,\
-                %(_description)s, %(_profile_image_url)s, %(_url)s, %(_statuses_count)s, %(_created_at)s, NOW())""", user.__dict__)
+                %(_description)s, %(_profile_image_url)s, %(_url)s, %(_statuses_count)s,\
+                %(_followers_count)s, %(_created_at)s, NOW())""", user.__dict__)
         
         cursor.execute("""INSERT INTO `followers` (`id`, `count`, `fetch_time`)\
                 VALUES (%(_id)s, %(_followers_count)s, NOW())""", user.__dict__)
