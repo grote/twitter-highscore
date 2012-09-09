@@ -100,6 +100,9 @@ def build_pages():
     print_highscore(get_highscore_tweets(),         print_tweets_score,         '/sort/tweets.html', ' - Tweets')
     print_highscore(get_highscore_tweets_per_day(), print_tweets_per_day_score, '/sort/tweets-per-day.html', ' - Tweets am Tag')
 
+    if(not opt.silent):
+        print "The web sites have been rebuilt!"
+
 
 def get_highscore_follower():
     try:
@@ -208,9 +211,6 @@ def print_highscore(highscore, print_score, path, title='', print_users=False):
     print_footer(f)
 
     f.close()
-
-    if(not opt.silent):
-        print "The web sites have been rebuilt!"
 
 
 def print_user_page(user, score):
