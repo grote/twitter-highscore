@@ -388,13 +388,16 @@ def update_users():
     try:
         users = api.UsersLookup(ids)
 
-        print "Got %d users from twitter" % len(users)
+        if(opt.debug):
+            print "Got %d users from twitter" % len(users)
+
         for user in users:
             add_followers_count(user)
 
         # run again if there might be more
         if(len(rows) >= limit):
-            print "run update_users() again"
+            if(opt.debug):
+                print "run update_users() again"
             update_users()
     except AttributeError, msg:
         print "Error: Twitter API response returned no users. Maybe one was deleted or deactivated."
@@ -432,8 +435,8 @@ def add_user(user_id):
     user.created_at = datetime.datetime.strptime(user.created_at, '%a %b %d %H:%M:%S +0000 %Y').isoformat(' ')
 
     try:
-        cursor.execute("""INSERT INTO `users` (`id`, `screen_name`, `name`, `location`,\
-                `description`, `profile_image_url`, `url`, `statuses_count`, `created_at`, `fetch_time`)\
+        cursor.execute("""INSERT INTO `users` (`id`, `screen_name`, `name`, `location`, `description`,\
+                `profile_image_url`, `url`, `statuses_count`, `followers_count`, `created_at`, `fetch_time`)\
                 VALUES (%(_id)s, %(_screen_name)s, %(_name)s, %(_location)s,\
                 %(_description)s, %(_profile_image_url)s, %(_url)s, %(_statuses_count)s,\
                 %(_followers_count)s, %(_created_at)s, NOW())""", user.__dict__)
