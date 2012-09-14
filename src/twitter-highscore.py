@@ -9,16 +9,11 @@ import twitter
 import time, datetime
 import json
 
-config = ConfigParser.SafeConfigParser()
-config_files = config.read([
+config_files = [
     'config.ini',                                                   # executing folder
     os.path.dirname(os.path.realpath(__file__)) + '/config.ini',    # real folder of script
     os.path.dirname(__file__) + '/config.ini'                       # folder of (symlinked) script
-])
-
-if(not config.has_section('Twitter Highscore')):
-    print "Error: Could not find a valid 'config.ini' file."
-    sys.exit(1)
+]
 
 # Parse Command Line Options
 usage = "usage: %prog option [user1] [[user2] ...]"
@@ -29,9 +24,25 @@ parser.add_option("-u", "--update", dest="update", action="store_true", help="Up
 parser.add_option("-b", "--build",  dest="build",  action="store_true", help="Only build the HTML pages.")
 parser.add_option("-t", "--tweet",  dest="tweet",  action="store_true", help="Tweet to notify added or removed users.")
 parser.add_option("-s", "--silent", dest="silent", action="store_true", help="Don't produce any output.")
+parser.add_option("-c", "--config", dest="config", action="store",      help="Add a new users and rebuild.")
 parser.add_option("", "--debug",    dest="debug",  action="store_true", help="Print debugging output.")
 #parser.add_option("-x", "--test",  dest="test",  action="store_true", help="Test.")
 (opt, args) = parser.parse_args()
+
+if(opt.config != None):
+    if(os.access(opt.config, os.R_OK)):
+        # use supplied argument for config file first
+        config_files.insert(0, opt.config)
+    else:
+        print "Error: Could not find config file '%s'." % opt.config
+        sys.exit(1)
+
+config = ConfigParser.SafeConfigParser()
+used_config = config.read(config_files)
+
+if(not config.has_section('Twitter Highscore')):
+    print "Error: Could not find a valid config file."
+    sys.exit(1)
 
 # Set-up database connection
 db = MySQLdb.connect(
@@ -55,7 +66,7 @@ cursor = db.cursor(cursorclass=MySQLdb.cursors.DictCursor)
 
 def main():
     if(opt.debug):
-        print "Used configuration file(s): %s" % config_files
+        print "Used configuration file(s): %s" % used_config
 
     if(opt.update):
         update_users()
@@ -431,6 +442,10 @@ def add_followers_count(user):
 def add_user(user_id):
     user = api.GetUser(user_id)
 
+    if(user.screen_name == None):
+        print "User %s does not exist." % user_id
+        return
+
     # transform created_at datetime into proper format
     user.created_at = datetime.datetime.strptime(user.created_at, '%a %b %d %H:%M:%S +0000 %Y').isoformat(' ')
 
@@ -454,7 +469,7 @@ def add_user(user_id):
                 print 'Tweeted "' + text + '".'
     except MySQLdb.IntegrityError, msg:
         if(msg[0] == 1062):
-            print 'This user was already added.'
+            print 'User %s was already added.' % user_id
         else:
             print msg
 
