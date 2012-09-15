@@ -1,5 +1,21 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+#
+#    Twitter Highscore
+#    Copyright 2012     Torsten Grote <t at grobox.de>
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU Affero General Public License as
+#    published by the Free Software Foundation, either version 3 of the
+#    License, or (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys, os
 from optparse import OptionParser
@@ -26,7 +42,6 @@ parser.add_option("-t", "--tweet",  dest="tweet",  action="store_true", help="Tw
 parser.add_option("-s", "--silent", dest="silent", action="store_true", help="Don't produce any output.")
 parser.add_option("-c", "--config", dest="config", action="store",      help="Add a new users and rebuild.")
 parser.add_option("", "--debug",    dest="debug",  action="store_true", help="Print debugging output.")
-#parser.add_option("-x", "--test",  dest="test",  action="store_true", help="Test.")
 (opt, args) = parser.parse_args()
 
 if(opt.config != None):
@@ -73,9 +88,6 @@ def main():
         build_pages()
     elif(opt.build):
         build_pages()
-#    elif(opt.test):
-#        add_followers_count('t_grote')
-#        print get_twitter_reset_time()
     elif(len(args) < 1):
         print "No arguments specified!\n"
         parser.print_help()
@@ -239,7 +251,7 @@ def print_user_page(user, score):
         for row in rows:
             series.append( {'x': time.mktime(row['fetch_time'].timetuple()), 'y': row['count']} )
 
-   # Update current score in database
+    # Update current score in database
     if(config.getboolean('Twitter Highscore', 'use_rank')):
         user['rank'] = score
         try:
