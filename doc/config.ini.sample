@@ -1,0 +1,70 @@
+[MySQL]
+# Database
+db=twitter_highscore
+# The user that has full access to the database
+user=
+# The user's password
+pass=
+# This is usually 'localhost'.
+host=localhost
+
+
+[Twitter]
+# Unfortunately, Twitter requires us to register with them before we are allowed
+# to use their API. This gives them complete control and puts us at their mercy.
+# Please consider switching to your own http://status.net/open-source instance.
+#
+# You can register your copy of Twitter Highscore at
+# https://dev.twitter.com/apps/new
+consumer_key=
+consumer_secret=
+access_token_key=
+access_token_secret=
+
+
+[Twitter Highscore]
+# Location where the HTML files will be created
+document_root=../www
+# Minimum time in hours that has to pass since last update of twitter user
+# profile before updating the profile again
+fetch_interval=23
+# Draw charts displaying evolution of follower count over time
+# (needs at least two updates to display)
+draw_charts=False
+# Display changes in highscore ranks compared to last update
+use_rank=False
+
+# Output Strings
+
+# Name of the site used as page title
+site_name=My Twitter Highscore
+# Headline of generated pages
+headline=My Twitter Highscore
+# Slogan of the site put below headline
+slogan=These people should switch to <a href="http://status.net">Status.Net</a>
+# Text that is shown in front of sorting options
+menu_intro=Alternative Sorting Orders:
+# Footer
+footer=Twitter Highscore is <a href="https://fsfe.org/about/basics/freesoftware.html">Free Software</a> released under the GNU AGPLv3.
+profile_footer=Twitter Highscore is <a href="https://fsfe.org/about/basics/freesoftware.html">Free Software</a> released under the GNU AGPLv3.
+
+# Tweet to send out when adding a new user
+tweet_add_user=you are now in my Twitter Highscore.
+# Tweet to send out when removing a user
+tweet_del_user=you are now out off my Twitter Highscore.
+# Tweet to send out after new update
+tweet_update=There's a new update of my Twitter Highscore. Number 42 is @%s
+# Text for tweet when adding multiple users
+tweet_add_users=you are now also in my Twitter Highscore.
+
+
+[Piwik]
+# Piwik is an awesome Free Software for web analytics
+# http://piwik.org
+#
+# Set the following to true and fill out the base URL of your Piwik installation
+# as well as the site ID to track your visitors.
+tracking=False
+base_url=
+idsite=
+
