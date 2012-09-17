@@ -20,7 +20,7 @@ Requirements
 Installation
 ------------
 
-1. Download [Twitter Highscore](https://github.com/Tovok7/oclingo/zipball/master)
+1. Download [Twitter Highscore](https://github.com/Tovok7/twitter-highscore/zipball/master)
 2. Create a MySQL database and apply `doc/database.sql` to it
 3. Copy `doc/config.ini.sample` to `src/config.ini`
 4. Edit `src/config.ini` following the inline comments
