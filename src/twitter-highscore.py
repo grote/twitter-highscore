@@ -125,7 +125,7 @@ def build_pages():
 def get_highscore_follower():
     try:
         cursor.execute("SELECT `id`, `screen_name`, `name`, `description`, `location`, `profile_image_url`, `url`,\
-                `statuses_count`, `followers_count`, `rank`, `created_at`, `fetch_time`\
+                `statuses_count`, `followers_count`, `rank`, `old_rank`, `created_at`, `fetch_time`\
                 FROM `users` ORDER BY `followers_count` DESC")
         rows = cursor.fetchall()
         return rows
@@ -213,14 +213,19 @@ def print_highscore(highscore, print_score, path, title='', print_users=False):
     position = 1
 
     for user in highscore:
+        if(print_users):
+            # print user page in the beginning so old_rank gets updated
+            print_user_page(user, position)
         f.write('<tr>')
         f.write('<td class="pos">' + str(position) + '</td>')
+        if(config.getboolean('Twitter Highscore', 'use_rank') and print_users):
+            f.write('<td class="diff">' +
+                    ('<img src="/eq.png"/>' if position == user['old_rank'] else '<img src="/up.png"/>'
+                        if position > user['old_rank'] else '<img src="/down.png"/>') + '</td>')
         f.write('<td><a href="/' + user['screen_name'] + '"><img src="' + user['profile_image_url'] + '"/></a></td>')
         f.write('<td>' + user['name'].encode('ascii', 'xmlcharrefreplace') + ' (<a href="https://twitter.com/'+user['screen_name']+'">@' + user['screen_name'] + '</a>)</td>')
         print_score(f, user)
         f.write('</tr>')
-        if(print_users):
-            print_user_page(user, position)
         position += 1
 
     f.write("</table>")
@@ -252,10 +257,11 @@ def print_user_page(user, score):
             series.append( {'x': time.mktime(row['fetch_time'].timetuple()), 'y': row['count']} )
 
     # Update current score in database
-    if(config.getboolean('Twitter Highscore', 'use_rank')):
-        user['rank'] = score
+    if(config.getboolean('Twitter Highscore', 'use_rank') and opt.update):
+        user['new_rank'] = score
+        user['old_rank'] = user['rank']
         try:
-            cursor.execute("UPDATE `users` SET `rank` = %(rank)s WHERE `id` = %(id)s", user)
+            cursor.execute("UPDATE `users` SET `rank` = %(new_rank)s, `old_rank` = %(rank)s WHERE `id` = %(id)s", user)
         except MySQLdb.IntegrityError, msg:
             print msg
 

@@ -38,6 +38,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `statuses_count` int(10) unsigned NOT NULL DEFAULT '0',
   `followers_count` int(11) unsigned NOT NULL DEFAULT '0',
   `rank` int(11) unsigned NOT NULL DEFAULT '0',
+  `old_rank` int(11) unsigned NOT NULL DEFAULT '0',
   `created_at` datetime NOT NULL,
   `fetch_time` datetime NOT NULL,
   UNIQUE KEY `id` (`id`)
