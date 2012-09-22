@@ -216,12 +216,12 @@ def print_highscore(highscore, print_score, path, title='', print_users=False):
         if(print_users):
             # print user page in the beginning so old_rank gets updated
             print_user_page(user, position)
-        f.write('<tr>')
+        f.write('<tr onclick="location.href=\'/' + user['screen_name'] + '\';">')
         f.write('<td class="pos">' + str(position) + '</td>')
         if(config.getboolean('Twitter Highscore', 'use_rank') and print_users):
             f.write('<td class="diff">' +
-                    ('<img src="/eq.png"/>' if position == user['old_rank'] else '<img src="/up.png"/>'
-                        if position > user['old_rank'] else '<img src="/down.png"/>') + '</td>')
+                    ('<img src="/eq.png"/>' if position == user['old_rank'] else '<img src="/down.png"/>'
+                        if position > user['old_rank'] else '<img src="/up.png"/>') + '</td>')
         f.write('<td><a href="/' + user['screen_name'] + '"><img src="' + user['profile_image_url'] + '"/></a></td>')
         f.write('<td>' + user['name'].encode('ascii', 'xmlcharrefreplace') + ' (<a href="https://twitter.com/'+user['screen_name']+'">@' + user['screen_name'] + '</a>)</td>')
         print_score(f, user)
