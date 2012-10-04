@@ -236,7 +236,7 @@ def print_highscore(highscore, print_score, path, title='', print_users=False):
     f.close()
 
     # Tweet about the update
-    if(print_users and opt.tweet):
+    if(print_users and opt.update and opt.tweet):
         text = config.get('Twitter Highscore', 'tweet_update', raw=True) % highscore[41]['screen_name']
         api.PostUpdates(text)
         if(not opt.silent):
