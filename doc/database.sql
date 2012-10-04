@@ -37,8 +37,8 @@ CREATE TABLE IF NOT EXISTS `users` (
   `url` varchar(512) COLLATE utf8_unicode_ci DEFAULT NULL,
   `statuses_count` int(10) unsigned NOT NULL DEFAULT '0',
   `followers_count` int(11) unsigned NOT NULL DEFAULT '0',
-  `rank` int(11) unsigned NOT NULL DEFAULT '0',
-  `old_rank` int(11) unsigned NOT NULL DEFAULT '0',
+  `rank` int(11) unsigned NOT NULL DEFAULT '4294967295',
+  `old_rank` int(11) unsigned NOT NULL DEFAULT '4294967295',
   `created_at` datetime NOT NULL,
   `fetch_time` datetime NOT NULL,
   UNIQUE KEY `id` (`id`)
