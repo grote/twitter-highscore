@@ -348,10 +348,13 @@ def print_header(f, title):
     f.write('<link rel="stylesheet" href="/css/style.css">');
 
     if(config.getboolean('Twitter Highscore', 'draw_charts')):
+        min = '.min'
+        if(config.getboolean('Twitter Highscore', 'debug')):
+            min = ''
         f.write('<link rel="stylesheet" href="/css/rickshaw.min.css">')
         f.write('<script src="/js/d3.min.js"></script>')
         f.write('<script src="/js/d3.layout.min.js"></script>')
-        f.write('<script src="/js/rickshaw.min.js"></script>')
+        f.write('<script src="/js/rickshaw' + min + '.js"></script>')
 
     f.write('</head>');
     f.write('<body>');

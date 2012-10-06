@@ -33,6 +33,8 @@ fetch_interval=23
 draw_charts=False
 # Display changes in highscore ranks compared to last update
 use_rank=False
+# Enable debug options
+debug=False
 
 # Output Strings
 
