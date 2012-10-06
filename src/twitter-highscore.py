@@ -211,11 +211,14 @@ def print_highscore(highscore, print_score, path, title='', print_users=False):
     f.write('<table align="center">')
 
     position = 1
+    user_list = []
 
     for user in highscore:
         if(print_users):
             # print user page in the beginning so old_rank gets updated
             print_user_page(user, position)
+            # add user to a list for JSON printing
+            user_list.append(user['screen_name'])
         f.write('<tr onclick="location.href=\'/' + user['screen_name'] + '\';">')
         f.write('<td class="pos">' + str(position) + '</td>')
         if(config.getboolean('Twitter Highscore', 'use_rank') and print_users):
@@ -235,6 +238,12 @@ def print_highscore(highscore, print_score, path, title='', print_users=False):
 
     f.close()
 
+    # Write out user list in JSON
+    if(print_users):
+        f = open(config.get('Twitter Highscore', 'document_root') + '/user_list.json', "w")
+        f.write(json.dumps(user_list));
+        f.close()
+
     # Tweet about the update
     if(print_users and opt.update and opt.tweet):
         text = config.get('Twitter Highscore', 'tweet_update', raw=True) % highscore[41]['screen_name']
@@ -244,17 +253,8 @@ def print_highscore(highscore, print_score, path, title='', print_users=False):
 
 
 def print_user_page(user, score):
-    # Get data for chart
-    if(config.getboolean('Twitter Highscore', 'draw_charts')):
-        try:
-            cursor.execute("SELECT `count`, `fetch_time` FROM `followers` WHERE `id` = %(id)s", user)
-            rows = cursor.fetchall()
-        except MySQLdb.IntegrityError, msg:
-            print msg
-
-        series = []
-        for row in rows:
-            series.append( {'x': time.mktime(row['fetch_time'].timetuple()), 'y': row['count']} )
+    # Print JSON file for use in chart
+    chart_len = print_json_for_chart(user)
 
     # Update current score in database
     if(config.getboolean('Twitter Highscore', 'use_rank') and opt.update):
@@ -264,7 +264,6 @@ def print_user_page(user, score):
             cursor.execute("UPDATE `users` SET `rank` = %(new_rank)s, `old_rank` = %(rank)s WHERE `id` = %(id)s", user)
         except MySQLdb.IntegrityError, msg:
             print msg
-
     
     # calculate tweets per day
     avg = float(user['statuses_count']) / (datetime.datetime.utcnow() - user['created_at']).days
@@ -289,38 +288,55 @@ def print_user_page(user, score):
     if(user['url']):
         f.write('<div><a href="' + user['url'] + '">' + user['url'] + '</a></div>')
     f.write('</div><br/>')
-    if(config.getboolean('Twitter Highscore', 'draw_charts') and len(series) > 1):
-        f.write('<div id="chart_container"><div id="y_axis"></div><div id="chart"></div></div>');
+    if(config.getboolean('Twitter Highscore', 'draw_charts') and chart_len > 1):
+        f.write('<div id="chart_container">')
+        f.write('<div id="y_axis"></div><div id="chart"></div>')
+        f.write('<div id="legend_container"><div id="smoother" title="Smoothing"></div><div id="legend"></div></div>')
+        f.write('</div>')
+        f.write('<div class="compare">%s' % config.get('Twitter Highscore', 'compare'))
+        f.write('<input type="text" name="twitter_user" /> <input type="button" name="add_line_button" value="OK"/>')
+        f.write('</div>')
     f.write('</div><br/>')
     f.write('<div class="footer">')
     f.write('%s<br/>' % config.get('Twitter Highscore', 'profile_footer'))
     f.write('Letztes Update am ' + str(user['fetch_time']) + '.')
     f.write('</div>')
 
-    if(config.getboolean('Twitter Highscore', 'draw_charts') and len(series) > 1):
-        f.write('<script>')
-        f.write('data = ' + json.dumps(series) +';')
+    if(config.getboolean('Twitter Highscore', 'draw_charts') and chart_len > 1):
+        f.write('<script language="javascript" type="text/javascript">')
+        f.write('''var chart_data, legend;
+$.ajax({
+    url: '/user/%(screen_name)s.json'.toLowerCase(),
+    dataType: 'json',
+    async: false,
+    success: function(data) {
+        chart_data = data;
+    }
+} );
 
-        f.write('''var graph = new Rickshaw.Graph( {
-        element: document.querySelector("#chart"),
-        width: 600,
-        height: 300,
-        renderer: 'line',
-        min: 'auto',
-        series: [ {
-                data: data, 
-                color: 'steelblue',
-                name: 'Follower'
-        } ]
+var series = [ {
+    data: chart_data,
+    color: palette.color(),
+    name: '%(screen_name)s'
+} ];
+
+var graph = new Rickshaw.Graph( {
+    element: document.querySelector("#chart"),
+    width: 600,
+    height: 300,
+    renderer: 'line',
+    min: 'auto',
+    multiLength: true,
+    series: series
 } );
 
 var x_axis = new Rickshaw.Graph.Axis.Time( { graph: graph } );
 
 var y_axis = new Rickshaw.Graph.Axis.Y( {
-        graph: graph,
-        orientation: 'left',
-        tickFormat: Rickshaw.Fixtures.Number.formatKMBT,
-        element: document.getElementById('y_axis'),
+    graph: graph,
+    orientation: 'left',
+    tickFormat: Rickshaw.Fixtures.Number.formatKMBT,
+    element: document.getElementById('y_axis'),
 } );
 
 graph.render();
@@ -334,34 +350,57 @@ var hoverDetail = new Rickshaw.Graph.HoverDetail( {
         return content;
     }
 } );
-
-</script>''')
+</script>'''.replace('\n', '') % user)
 
     print_footer(f)
     f.close()
 
 
+def print_json_for_chart(user):
+    series = []
+
+    if(config.getboolean('Twitter Highscore', 'draw_charts')):
+        try:
+            cursor.execute("SELECT `count`, `fetch_time` FROM `followers` WHERE `id` = %(id)s", user)
+            rows = cursor.fetchall()
+        except MySQLdb.IntegrityError, msg:
+            print msg
+
+        for row in rows:
+            series.append( {'x': time.mktime(row['fetch_time'].timetuple()), 'y': row['count']} )
+
+        f = open(config.get('Twitter Highscore', 'document_root')+'/user/'+user['screen_name'].lower()+'.json', "w")
+        f.write(json.dumps(series))
+        f.close()
+
+    return len(series)
+
+
 def print_header(f, title):
-    f.write('<html>');
-    f.write('<head>');
-    f.write('<title>' + title + '</title>');
-    f.write('<link rel="stylesheet" href="/css/style.css">');
+    f.write('<html>')
+    f.write('<head>')
+    f.write('<title>' + title + '</title>')
+    f.write('<meta http-equiv="Content-Type" content="text/html; charset=utf-8">')
 
     if(config.getboolean('Twitter Highscore', 'draw_charts')):
         min = '.min'
         if(config.getboolean('Twitter Highscore', 'debug')):
             min = ''
         f.write('<link rel="stylesheet" href="/css/rickshaw.min.css">')
+        f.write('<script src="/js/jquery.min.js"></script>')
+        f.write('<script src="/js/jquery.autocomplete.js"></script>')
         f.write('<script src="/js/d3.min.js"></script>')
         f.write('<script src="/js/d3.layout.min.js"></script>')
         f.write('<script src="/js/rickshaw' + min + '.js"></script>')
+        f.write('<script src="/js/twitter-highscore.js"></script>')
 
-    f.write('</head>');
-    f.write('<body>');
-    f.write('<div class="header">');
+    f.write('<link rel="stylesheet" href="/css/style.css">')
+    f.write('</head>')
+    f.write('<body>')
+    f.write('<div class="header">')
     f.write('<span id="headline"><a href="/">%s</a></span>' % config.get('Twitter Highscore', 'headline'))
     f.write('<br/><span id="slogan">%s</span>' % config.get('Twitter Highscore', 'slogan'))
-    f.write('</div>');
+    f.write('</div>')
 
 
 def print_footer(f):
