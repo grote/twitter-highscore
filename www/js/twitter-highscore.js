@@ -56,11 +56,16 @@ function add_twitter_line(user, data) {
         legend = new Rickshaw.Graph.Legend( {
             graph: graph,
             element: document.getElementById('legend')
-
         } );
     } else {
         legend.addLine(new_series);
     }
+
+    // link to profile page from legend
+    $('#legend span[class="label"]').replaceWith(function() {
+        var url = $.trim($(this).text());
+        return '<a href="/' + url + '" class="label" target="_blank">' + url + '</a>';
+    } );
 }
 
 // execute this when page is fully loaded
