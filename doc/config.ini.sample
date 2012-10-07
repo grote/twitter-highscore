@@ -48,6 +48,8 @@ slogan=These people should switch to <a href="http://status.net">Status.Net</a>
 menu_intro=Alternative Sorting Orders:
 # Chart comparison intro text
 compare=Compare to
+# Dynamic link to the chart
+page_link=URL to this chart
 # Footer
 footer=Twitter Highscore is <a href="https://fsfe.org/about/basics/freesoftware.html">Free Software</a> released under the GNU AGPLv3.
 profile_footer=Twitter Highscore is <a href="https://fsfe.org/about/basics/freesoftware.html">Free Software</a> released under the GNU AGPLv3.

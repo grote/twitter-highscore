@@ -66,6 +66,9 @@ function add_twitter_line(user, data) {
         var url = $.trim($(this).text());
         return '<a href="/' + url + '" class="label" target="_blank">' + url + '</a>';
     } );
+
+    // update link to the current chart
+    $('#page_link').attr("href", $('#page_link').attr('href') + '#' + user);
 }
 
 // execute this when page is fully loaded

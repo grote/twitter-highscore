@@ -295,6 +295,7 @@ def print_user_page(user, score):
         f.write('</div>')
         f.write('<div class="compare">%s' % config.get('Twitter Highscore', 'compare'))
         f.write('<input type="text" name="twitter_user" /> <input type="button" name="add_line_button" value="OK"/>')
+        f.write('<p><a href="/%s" id="page_link">%s</a></p>' % (user['screen_name'], config.get('Twitter Highscore', 'page_link')) );
         f.write('</div>')
     f.write('</div><br/>')
     f.write('<div class="footer">')
