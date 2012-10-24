@@ -24,6 +24,7 @@ import MySQLdb
 import twitter
 import time, datetime
 import json
+import re
 
 config_files = [
     'config.ini',                                                   # executing folder
@@ -283,7 +284,7 @@ def print_user_page(user, score):
     f.write('<p>seit dem <b>' + user['created_at'].date().strftime('%d.%m.%Y') + '</b> auf Twitter ')
     f.write('und schreibt durchschnittlich <b>' + avg + '</b> Tweets am Tag.</p>')
     f.write('</div>')
-    f.write('<div class="bio">' + user['description'].encode('ascii', 'xmlcharrefreplace') + '</div>')
+    f.write('<div class="bio">' + create_twitter_links(user['description']).encode('ascii', 'xmlcharrefreplace') + '</div>')
     f.write('<div>' + user['location'].encode('ascii', 'xmlcharrefreplace') + '</div>')
     if(user['url']):
         f.write('<div><a href="' + user['url'] + '">' + user['url'] + '</a></div>')
@@ -557,6 +558,26 @@ def del_user(user_id):
     file = config.get('Twitter Highscore', 'document_root') + '/user/' + user.screen_name + '.html'
     if(os.path.isfile(file)):
         os.remove(file)
+
+
+def create_twitter_links(text):
+    # make @screen_names clickable
+    text = re.sub(r' @(?P<name>\w+)', link_to_us, text)
+
+    # make #hastags clickable
+    text = re.sub(r' #(?P<name>\w+)', r' <a href="https://twitter.com/search/?src=hash&amp;q=%23\g<name>">#\g<name></a>', text)
+
+    return text
+
+
+def link_to_us(m):
+    file = config.get('Twitter Highscore', 'document_root') + '/user/' + m.group(1) + '.html'
+    if(os.path.isfile(file)):
+        # return link to our site if we have this user
+        return ' <a href="/' + m.group(1) + '">@' + m.group(1) + '</a>'
+    else:
+        # return link to twitter profile page
+        return ' <a href="https://twitter.com/' + m.group(1) + '">@' + m.group(1) + '</a>'
 
 
 def get_twitter_reset_time():
