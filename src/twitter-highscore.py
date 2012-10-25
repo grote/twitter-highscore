@@ -554,8 +554,9 @@ def del_user(user_id):
     except MySQLdb.IntegrityError, msg:
         print msg
     
-    # remove user profile page
+    # remove user profile page and json file
     file = config.get('Twitter Highscore', 'document_root') + '/user/' + user.screen_name + '.html'
+    file = config.get('Twitter Highscore', 'document_root') + '/user/' + user.screen_name.lower() + '.json'
     if(os.path.isfile(file)):
         os.remove(file)
 
