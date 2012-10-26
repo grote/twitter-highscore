@@ -363,7 +363,7 @@ def print_json_for_chart(user):
 
     if(config.getboolean('Twitter Highscore', 'draw_charts')):
         try:
-            cursor.execute("SELECT `count`, `fetch_time` FROM `followers` WHERE `id` = %(id)s", user)
+            cursor.execute("SELECT `count`, `fetch_time` FROM `followers` WHERE `id` = %(id)s ORDER BY `key_id` ASC", user)
             rows = cursor.fetchall()
         except MySQLdb.IntegrityError, msg:
             print msg
