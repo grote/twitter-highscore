@@ -525,7 +525,7 @@ def add_user(user_id):
             print 'New entry for ' + user.screen_name + ' added.'
         
         if(opt.tweet):
-            text = '@' + user.screen_name + config.get('Twitter Highscore', 'tweet_add_user')
+            text = '@' + user.screen_name + ' ' + config.get('Twitter Highscore', 'tweet_add_user')
             api.PostUpdates(text)
             if(not opt.silent):
                 print 'Tweeted "' + text + '".'
@@ -547,7 +547,7 @@ def del_user(user_id):
             print user.screen_name + ' was removed.'
         
         if(opt.tweet):
-            text = '@' + user.screen_name + config.get('Twitter Highscore', 'tweet_del_user')
+            text = '@' + user.screen_name + ' ' + config.get('Twitter Highscore', 'tweet_del_user')
             api.PostUpdates(text)
             if(not opt.silent):
                 print 'Tweeted "' + text + '".'
