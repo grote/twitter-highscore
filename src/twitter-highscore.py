@@ -285,7 +285,8 @@ def print_user_page(user, score):
     f.write('und schreibt durchschnittlich <b>' + avg + '</b> Tweets am Tag.</p>')
     f.write('</div>')
     f.write('<div class="bio">' + create_twitter_links(user['description']).encode('ascii', 'xmlcharrefreplace') + '</div>')
-    f.write('<div>' + user['location'].encode('ascii', 'xmlcharrefreplace') + '</div>')
+    if(user['location']):
+        f.write('<div>' + user['location'].encode('ascii', 'xmlcharrefreplace') + '</div>')
     if(user['url']):
         f.write('<div><a href="' + user['url'] + '">' + user['url'] + '</a></div>')
     f.write('</div><br/>')
