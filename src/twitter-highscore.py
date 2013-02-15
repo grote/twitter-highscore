@@ -118,6 +118,7 @@ def build_pages():
     print_highscore(get_highscore_age(),            print_age_score,            '/sort/age.html', ' - Alter')
     print_highscore(get_highscore_tweets(),         print_tweets_score,         '/sort/tweets.html', ' - Tweets')
     print_highscore(get_highscore_tweets_per_day(), print_tweets_per_day_score, '/sort/tweets-per-day.html', ' - Tweets am Tag')
+    print_highscore(get_highscore_rise(),           print_rise_score,           '/sort/rise.html', ' - Aufstieg')
 
     if(not opt.silent):
         print "The web sites have been rebuilt!"
@@ -183,6 +184,41 @@ def print_tweets_per_day_score(f, user):
     f.write('<td class="score">%.2f</td>' % user['tweets_per_day'])
 
 
+def get_highscore_rise():
+    try:
+        cursor.execute("SELECT `u`.`id`, `screen_name`, `name`, `profile_image_url`, `rise`\
+                FROM `users` AS `u`\
+                INNER JOIN (\
+                    SELECT `f`.`id`,\
+                    (N * Sum_XY - Sum_X * Sum_Y)/(N * Sum_X2 - Sum_X * Sum_X) AS `rise`\
+                    FROM `followers` AS `f`\
+                    INNER JOIN (\
+                        SELECT\
+                            `f`.`id`,\
+                            COUNT(`id`) AS N,\
+                            SUM(TO_DAYS(`fetch_time`)) AS Sum_X,\
+                            SUM(TO_DAYS(`fetch_time`) * TO_DAYS(`fetch_time`)) AS Sum_X2,\
+                            SUM(`count`) AS Sum_Y,\
+                            SUM(`count` * `count`) AS Sum_Y2,\
+                            SUM(TO_DAYS(`fetch_time`) * `count`) AS Sum_XY\
+                        FROM `followers` AS `f`\
+                        GROUP BY `f`.`id`\
+                    ) G ON G.`id` = `f`.`id`\
+                    GROUP BY `f`.`id`\
+                ) H ON H.`id` = `u`.`id`\
+                ORDER BY `rise` DESC")
+        rows = cursor.fetchall()
+        return rows
+    except MySQLdb.IntegrityError, msg:
+        print msg
+
+def print_rise_score(f, user):
+    if(user['rise']):
+        f.write('<td class="score">%.2f</td>' % user['rise'])
+    else:
+        f.write('<td class="score">N/A</td>')
+
+
 def print_highscore(highscore, print_score, path, title='', print_users=False):
     f = open(config.get('Twitter Highscore', 'document_root') + path, "w")
     
@@ -195,6 +231,10 @@ def print_highscore(highscore, print_score, path, title='', print_users=False):
         f.write('Gefolgschaft, ')
     else:
         f.write('<a href="/">Gefolgschaft</a>, ')
+    if(print_score == print_rise_score):
+        f.write('schneller Aufstieg, ')
+    else:
+        f.write('schneller <a href="/sort/rise">Aufstieg</a>, ')
     if(print_score == print_age_score):
         f.write('Alter, ')
     else:
