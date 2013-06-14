@@ -14,6 +14,7 @@ Requirements
 * Python modules:
   * [MySQLdb](http://mysql-python.sourceforge.net/)
   * [twitter](https://code.google.com/p/python-twitter/)
+  * [requests](http://www.python-requests.org)
 * MySQL Database
 
 

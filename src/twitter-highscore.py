@@ -25,6 +25,7 @@ import twitter
 import time, datetime
 import json
 import re
+import requests
 
 config_files = [
     'config.ini',                                                   # executing folder
@@ -527,6 +528,8 @@ def add_followers_count(user):
         print "Query for user '%s' with id '%s' has returned 0 followers. Not adding..." % (user.screen_name, user.id)
         return
 
+    user.url = unshorten(user.url)
+
     try:
         cursor.execute("""INSERT INTO `followers` (`id`, `count`, `fetch_time`)\
                 VALUES (%(_id)s, %(_followers_count)s, NOW())""", user.__dict__)
@@ -551,6 +554,9 @@ def add_user(user_id):
 
     # transform created_at datetime into proper format
     user.created_at = datetime.datetime.strptime(user.created_at, '%a %b %d %H:%M:%S +0000 %Y').isoformat(' ')
+
+    # unshorten t.co URL
+    user.url = unshorten(user.url)
 
     try:
         cursor.execute("""INSERT INTO `users` (`id`, `screen_name`, `name`, `location`, `description`,\
@@ -611,6 +617,21 @@ def create_twitter_links(text):
         return text
     else:
         return ""
+
+
+def unshorten(url):
+    new_url = url
+
+    try:
+        if(opt.debug):
+            print "Trying to unshorten URL", url
+        r = requests.get(url)
+        if r.status_code == 200:
+            new_url = r.url
+    except:
+        pass
+
+    return new_url
 
 
 def link_to_us(m):
