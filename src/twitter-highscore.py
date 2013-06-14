@@ -620,6 +620,9 @@ def create_twitter_links(text):
 
 
 def unshorten(url):
+    if(url == None):
+        return url
+
     new_url = url
 
     try:
