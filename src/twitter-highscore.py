@@ -543,7 +543,7 @@ def add_followers_count(user):
 
 
 def add_user(user_id):
-    user = api.GetUser(user_id)
+    user = api.GetUser(screen_name=user_id, include_entities=True)
 
     if(user.screen_name == None):
         print "User %s does not exist." % user_id
