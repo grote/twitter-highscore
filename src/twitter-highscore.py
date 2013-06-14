@@ -465,7 +465,7 @@ def print_footer(f):
 
 def update_users():
     limit = 100
-    rate_limit = api.GetRateLimitStatus()['remaining_hits']
+    rate_limit = api.GetRateLimitStatus('users')['resources']['users']['/users/lookup']['remaining']
 
     if(limit > rate_limit and rate_limit > 1):
         limit = rate_limit
@@ -477,7 +477,7 @@ def update_users():
         if(opt.debug):
             print "Continuing..."
         # get new limit
-        limit = api.GetRateLimitStatus()['remaining_hits']
+        limit = api.GetRateLimitStatus('users')['resources']['users']['/users/lookup']['remaining']
 
     try:
         # select all entries older than %d hours
@@ -603,13 +603,14 @@ def del_user(user_id):
 
 
 def create_twitter_links(text):
-    # make @screen_names clickable
-    text = re.sub(r' @(?P<name>\w+)', link_to_us, text)
-
-    # make #hastags clickable
-    text = re.sub(r' #(?P<name>\w+)', r' <a href="https://twitter.com/search/?src=hash&amp;q=%23\g<name>">#\g<name></a>', text)
-
-    return text
+    if(text != None):
+        # make @screen_names clickable
+        text = re.sub(r' @(?P<name>\w+)', link_to_us, text)
+        # make #hastags clickable
+        text = re.sub(r' #(?P<name>\w+)', r' <a href="https://twitter.com/search/?src=hash&amp;q=%23\g<name>">#\g<name></a>', text)
+        return text
+    else:
+        return ""
 
 
 def link_to_us(m):
@@ -624,7 +625,7 @@ def link_to_us(m):
 
 def get_twitter_reset_time():
     # get time of rate limit reset from API
-    reset_time = api.GetRateLimitStatus()['reset_time']
+    reset_time = api.GetRateLimitStatus('users')['resources']['users']['/users/lookup']['reset']
     # convert to datetime object
     limit = datetime.datetime.strptime(reset_time, '%a %b %d %H:%M:%S +0000 %Y')
     # calculate difference between reset time and now
