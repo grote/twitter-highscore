@@ -72,9 +72,16 @@ $(function() {
     // Enable Auto-complete
     $.getJSON('/user_list.json', function(data) {
         $('input[name="twitter_user"]').autocomplete({
-            lookup: data
+            source: data
         } );
     } );
+
+    /* ugly hack to highlight match in auto-complete */
+    $.ui.autocomplete.prototype._renderItem = function( ul, item ) {
+        return $( "<li>" )
+            .append( "<a>" + item.label.replace(this.term, "<span style='font-weight:bold;color:Blue;'>" + this.term + "</span>", "i") +  "</a>" )
+            .appendTo( ul );
+    };
 
     var hash = window.location.hash;
     if(hash != '') {
