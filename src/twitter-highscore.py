@@ -334,6 +334,7 @@ def print_user_page(user, score):
     if(config.getboolean('Twitter Highscore', 'draw_charts') and chart_len > 1):
         f.write('<div id="chart_container">')
         f.write('<div id="y_axis"></div><div id="chart"></div>')
+        f.write('<div id="slider"></div>');
         f.write('<div id="legend_container"><div id="smoother" title="Smoothing"></div><div id="legend"></div></div>')
         f.write('</div>')
         f.write('<div class="compare">%s' % config.get('Twitter Highscore', 'compare'))
@@ -394,6 +395,11 @@ var hoverDetail = new Rickshaw.Graph.HoverDetail( {
         return content;
     }
 } );
+
+var slider = new Rickshaw.Graph.RangeSlider( {
+    graph: graph,
+    element: $('#slider')
+} );
 </script>'''.replace('\n', '') % user)
 
     print_footer(f)
@@ -431,7 +437,9 @@ def print_header(f, title):
         if(config.getboolean('Twitter Highscore', 'debug')):
             min = ''
         f.write('<link rel="stylesheet" href="/css/rickshaw.min.css">')
+        f.write('<link rel="stylesheet" href="/css/jquery-ui.min.css">')
         f.write('<script src="/js/jquery.min.js"></script>')
+        f.write('<script src="/js/jquery-ui.min.js"></script>')
         f.write('<script src="/js/jquery.autocomplete.js"></script>')
         f.write('<script src="/js/d3.v2.js"></script>')
         f.write('<script src="/js/rickshaw' + min + '.js"></script>')
