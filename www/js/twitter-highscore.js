@@ -30,16 +30,6 @@ function add_twitter_user(user) {
 }
 
 function add_twitter_line(user, data) {
-    // Fix rickshaw bug by making both series the same length
-    while(series[0].data.length > data.length) {
-//        data.push(data[data.length-1]);
-        series[0].data.shift();
-    }
-    while(window.series[0].data.length < data.length) {
-//        series[0].data.push(series[0].data[series[0].data.length-1]);
-        data.shift();
-    }
-
     new_series = {
         data: data,
         color: palette.color(),
@@ -47,9 +37,6 @@ function add_twitter_line(user, data) {
     };
     series.push(new_series);
     graph.update();
-
-    // Hide hover detail due to rickshaw bug
-    $('.detail').hide();
 
     // Add legend
     if(graph.series.length < 3) {
