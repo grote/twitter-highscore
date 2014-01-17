@@ -590,7 +590,7 @@ def add_user(user_id):
 
 
 def del_user(user_id):
-    user = api.GetUser(user_id)
+    user = api.GetUser(screen_name=user_id)
 
     try:
         cursor.execute("DELETE FROM `users` WHERE `id` = %(_id)s", user.__dict__)
