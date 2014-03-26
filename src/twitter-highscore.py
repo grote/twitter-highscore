@@ -129,7 +129,9 @@ def get_highscore_follower():
     try:
         cursor.execute("SELECT `id`, `screen_name`, `name`, `description`, `location`, `profile_image_url`, `url`,\
                 `statuses_count`, `followers_count`, `rank`, `old_rank`, `created_at`, `fetch_time`\
-                FROM `users` ORDER BY `followers_count` DESC")
+                FROM `users`\
+                WHERE `invisible`=0\
+                ORDER BY `followers_count` DESC")
         rows = cursor.fetchall()
         return rows
     except MySQLdb.IntegrityError, msg:
@@ -144,6 +146,7 @@ def get_highscore_age():
         cursor.execute("SELECT `id`, `screen_name`, `name`, `description`, `location`,\
                 `profile_image_url`, `url`, `statuses_count`, `created_at`, `fetch_time`\
                 FROM `users`\
+                WHERE `invisible`=0\
                 ORDER BY `created_at` ASC")
         rows = cursor.fetchall()
         return rows
@@ -159,6 +162,7 @@ def get_highscore_tweets():
         cursor.execute("SELECT `id`, `screen_name`, `name`, `description`, `location`,\
                 `profile_image_url`, `url`, `statuses_count`, `created_at`, `fetch_time`\
                 FROM `users`\
+                WHERE `invisible`=0\
                 ORDER BY `statuses_count` DESC")
         rows = cursor.fetchall()
         return rows
@@ -175,6 +179,7 @@ def get_highscore_tweets_per_day():
                 `profile_image_url`, `url`, `statuses_count`, `created_at`, `fetch_time`,\
                 `statuses_count` / TIMESTAMPDIFF(DAY, `created_at`, NOW()) AS `tweets_per_day`\
                 FROM `users`\
+                WHERE `invisible`=0\
                 ORDER BY `tweets_per_day` DESC")
         rows = cursor.fetchall()
         return rows
@@ -207,6 +212,7 @@ def get_highscore_rise():
                     ) G ON G.`id` = `f`.`id`\
                     GROUP BY `f`.`id`\
                 ) H ON H.`id` = `u`.`id`\
+                WHERE `invisible`=0\
                 ORDER BY `rise` DESC")
         rows = cursor.fetchall()
         return rows
