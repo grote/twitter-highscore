@@ -36,13 +36,15 @@ config_files = [
 # Parse Command Line Options
 usage = "usage: %prog option [user1] [[user2] ...]"
 parser = OptionParser(usage=usage, version="%prog 0.1")
-parser.add_option("-a", "--add",    dest="add",    action="store_true", help="Add a new users and rebuild.")
-parser.add_option("-d", "--delete", dest="delete", action="store_true", help="Delete a users and rebuild.")
+parser.add_option("-a", "--add",    dest="add",    action="store_true", help="Add new user(s) and rebuild.")
+parser.add_option("-d", "--delete", dest="delete", action="store_true", help="Delete user(s) and rebuild.")
 parser.add_option("-u", "--update", dest="update", action="store_true", help="Update the database from Twitter and rebuild.")
 parser.add_option("-b", "--build",  dest="build",  action="store_true", help="Only build the HTML pages.")
-parser.add_option("-t", "--tweet",  dest="tweet",  action="store_true", help="Tweet to notify added or removed users.")
+parser.add_option("-t", "--tweet",  dest="tweet",  action="store_true", help="Tweet to notify about changes of users.")
 parser.add_option("-s", "--silent", dest="silent", action="store_true", help="Don't produce any output.")
-parser.add_option("-c", "--config", dest="config", action="store",      help="Add a new users and rebuild.")
+parser.add_option("-c", "--config", dest="config", action="store",      help="Use specified config file instead of default.")
+parser.add_option("",   "--hide",   dest="hide",   action="store_true", help="Hide user(s).")
+parser.add_option("",   "--unhide", dest="unhide", action="store_true", help="Show hidden user(s) again.")
 parser.add_option("", "--debug",    dest="debug",  action="store_true", help="Print debugging output.")
 (opt, args) = parser.parse_args()
 
@@ -105,6 +107,14 @@ def main():
         elif(opt.delete):
             for user in args:
                 del_user(user)
+            build_pages()
+        elif(opt.hide):
+            for user in args:
+                hide_user(user)
+            build_pages()
+        elif(opt.unhide):
+            for user in args:
+                unhide_user(user)
             build_pages()
         else:
            print "No command line option specified.\n"
@@ -493,9 +503,10 @@ def update_users():
         limit = api.GetRateLimitStatus('users')['resources']['users']['/users/lookup']['remaining']
 
     try:
-        # select all entries older than %d hours
+        # select all entries older than %d hours which are not set to invisible
         cursor.execute("SELECT `id` FROM `users`\
                 WHERE TIMESTAMPADD(HOUR, -%d, NOW()) >= `fetch_time`\
+                AND `invisible` = 0\
                 LIMIT %d" % (config.getint('Twitter Highscore', 'fetch_interval'), limit) )
         rows = cursor.fetchall()
     except MySQLdb.IntegrityError, msg:
@@ -618,6 +629,42 @@ def del_user(user_id):
     file = config.get('Twitter Highscore', 'document_root') + '/user/' + user.screen_name.lower() + '.json'
     if(os.path.isfile(file)):
         os.remove(file)
+
+
+def hide_user(user_id):
+    user = api.GetUser(screen_name=user_id)
+
+    try:
+        cursor.execute("UPDATE `users` SET `invisible` = 1 WHERE `id` = %(_id)s", user.__dict__)
+
+        if(not opt.silent):
+            print user.screen_name + ' was hidden.'
+
+        if(opt.tweet):
+            text = '@' + user.screen_name + ' ' + config.get('Twitter Highscore', 'tweet_hide_user')
+            api.PostUpdates(text)
+            if(not opt.silent):
+                print 'Tweeted "' + text + '".'
+    except MySQLdb.IntegrityError, msg:
+        print msg
+
+
+def unhide_user(user_id):
+    user = api.GetUser(screen_name=user_id)
+
+    try:
+        cursor.execute("UPDATE `users` SET `invisible` = 0 WHERE `id` = %(_id)s", user.__dict__)
+
+        if(not opt.silent):
+            print user.screen_name + ' was made visible again.'
+
+        if(opt.tweet):
+            text = '@' + user.screen_name + ' ' + config.get('Twitter Highscore', 'tweet_unhide_user')
+            api.PostUpdates(text)
+            if(not opt.silent):
+                print 'Tweeted "' + text + '".'
+    except MySQLdb.IntegrityError, msg:
+        print msg
 
 
 def create_twitter_links(text):

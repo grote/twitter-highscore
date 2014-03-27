@@ -62,6 +62,10 @@ tweet_del_user=you are now out off my Twitter Highscore.
 tweet_update=There's a new update of my Twitter Highscore. Number 42 is @%s
 # Text for tweet when adding multiple users
 tweet_add_users=you are now also in my Twitter Highscore.
+# Text to send out when hiding a user
+tweet_hide_user=you are now hidden from my Twitter Highscore.
+# Text to send out when unhiding a user
+tweet_unhide_user=you are again shown on my Twitter Highscore.
 
 
 [Piwik]
