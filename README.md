@@ -22,7 +22,8 @@ Installation
 ------------
 
 1. Download [Twitter Highscore](https://github.com/Tovok7/twitter-highscore/zipball/master)
-2. Create a MySQL database and apply `doc/database.sql` to it
+2. Create a MySQL database and apply `doc/database.sql` to it:
+   `$ mysql -u username -p -h localhost DATA-BASE-NAME < doc/database.sql`
 3. Copy `doc/config.ini.sample` to `src/config.ini`
 4. Edit `src/config.ini` following the inline comments
 5. Run `src/twitter-highscore.py --help` to get started
