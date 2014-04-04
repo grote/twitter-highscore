@@ -241,29 +241,31 @@ def print_highscore(highscore, print_score, path, title='', print_users=False):
     
     print_header(f, config.get('Twitter Highscore', 'site_name') + title)
 
+    base_url = config.get('Twitter Highscore', 'base_url')
+
     # Print Menu
     f.write('<div class="footer">')
     f.write('%s ' % config.get('Twitter Highscore', 'menu_intro'))
     if(print_score == print_follower_score):
         f.write('Gefolgschaft, ')
     else:
-        f.write('<a href="/">Gefolgschaft</a>, ')
+        f.write('<a href="%s/">Gefolgschaft</a>, ' % base_url)
     if(print_score == print_rise_score):
         f.write('schneller Aufstieg, ')
     else:
-        f.write('schneller <a href="/sort/rise">Aufstieg</a>, ')
+        f.write('schneller <a href="%s/sort/rise">Aufstieg</a>, ' % base_url)
     if(print_score == print_age_score):
         f.write('Alter, ')
     else:
-        f.write('<a href="/sort/age">Alter</a>, ')
+        f.write('<a href="%s/sort/age">Alter</a>, ' % base_url)
     if(print_score == print_tweets_score):
         f.write('viele Tweets oder ')
     else:
-        f.write('<a href="/sort/tweets">viele Tweets</a> oder ')
+        f.write('<a href="%s/sort/tweets">viele Tweets</a> oder ' % base_url)
     if(print_score == print_tweets_per_day_score):
         f.write('viele Tweets pro Tag?')
     else:
-        f.write('<a href="/sort/tweets-per-day">viele Tweets pro Tag</a>?')
+        f.write('<a href="%s/sort/tweets-per-day">viele Tweets pro Tag</a>?' % base_url)
     f.write('</div>')
 
     f.write('<table align="center">')
@@ -277,13 +279,13 @@ def print_highscore(highscore, print_score, path, title='', print_users=False):
             print_user_page(user, position)
             # add user to a list for JSON printing
             user_list.append(user['screen_name'])
-        f.write('<tr onclick="location.href=\'/' + user['screen_name'] + '\';">')
+        f.write('<tr onclick="location.href=\'' + config.get('Twitter Highscore', 'base_url') + '/' + user['screen_name'] + '\';">')
         f.write('<td class="pos">' + str(position) + '</td>')
         if(config.getboolean('Twitter Highscore', 'use_rank') and print_users):
             f.write('<td class="diff">' +
                     ('<img src="/eq.png"/>' if position == user['old_rank'] else '<img src="/down.png"/>'
                         if position > user['old_rank'] else '<img src="/up.png"/>') + '</td>')
-        f.write('<td><a href="/' + user['screen_name'] + '"><img src="' + user['profile_image_url'] + '"/></a></td>')
+        f.write('<td><a href="' +config.get('Twitter Highscore', 'base_url') + '/' + user['screen_name'] + '"><img src="' + user['profile_image_url'] + '"/></a></td>')
         f.write('<td>' + user['name'].encode('ascii', 'xmlcharrefreplace') + ' (<a href="https://twitter.com/'+user['screen_name']+'">@' + user['screen_name'] + '</a>)</td>')
         print_score(f, user)
         f.write('</tr>')
@@ -448,23 +450,25 @@ def print_header(f, title):
     f.write('<title>' + title + '</title>')
     f.write('<meta http-equiv="Content-Type" content="text/html; charset=utf-8">')
 
+    base_url = config.get('Twitter Highscore', 'base_url')
+
     if(config.getboolean('Twitter Highscore', 'draw_charts')):
         min = '.min'
         if(config.getboolean('Twitter Highscore', 'debug')):
             min = ''
-        f.write('<link rel="stylesheet" href="/css/rickshaw.min.css">')
-        f.write('<link rel="stylesheet" href="/css/jquery-ui.min.css">')
-        f.write('<script src="/js/jquery.min.js"></script>')
-        f.write('<script src="/js/jquery-ui.min.js"></script>')
-        f.write('<script src="/js/d3.v2.js"></script>')
-        f.write('<script src="/js/rickshaw' + min + '.js"></script>')
-        f.write('<script src="/js/twitter-highscore.js"></script>')
+        f.write('<link rel="stylesheet" href="%s/css/rickshaw.min.css">' % base_url)
+        f.write('<link rel="stylesheet" href="%s/css/jquery-ui.min.css">' % base_url)
+        f.write('<script src="%s/js/jquery.min.js"></script>' % base_url)
+        f.write('<script src="%s/js/jquery-ui.min.js"></script>' % base_url)
+        f.write('<script src="%s/js/d3.v2.js"></script>' % base_url)
+        f.write('<script src="%s/js/rickshaw%s.js"></script>' % (base_url, min))
+        f.write('<script src="%s/js/twitter-highscore.js"></script>' % base_url)
 
-    f.write('<link rel="stylesheet" href="/css/style.css">')
+    f.write('<link rel="stylesheet" href="%s/css/style.css">' % base_url)
     f.write('</head>')
     f.write('<body>')
     f.write('<div class="header">')
-    f.write('<span id="headline"><a href="/">%s</a></span>' % config.get('Twitter Highscore', 'headline'))
+    f.write('<span id="headline"><a href="%s/">%s</a></span>' % (base_url, config.get('Twitter Highscore', 'headline')))
     f.write('<br/><span id="slogan">%s</span>' % config.get('Twitter Highscore', 'slogan'))
     f.write('</div>')
 
@@ -700,7 +704,7 @@ def link_to_us(m):
     file = config.get('Twitter Highscore', 'document_root') + '/user/' + m.group(1) + '.html'
     if(os.path.isfile(file)):
         # return link to our site if we have this user
-        return ' <a href="/' + m.group(1) + '">@' + m.group(1) + '</a>'
+        return ' <a href="' + config.get('Twitter Highscore', 'base_url') +'/' + m.group(1) + '">@' + m.group(1) + '</a>'
     else:
         # return link to twitter profile page
         return ' <a href="https://twitter.com/' + m.group(1) + '">@' + m.group(1) + '</a>'

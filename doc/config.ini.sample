@@ -25,6 +25,8 @@ access_token_secret=
 [Twitter Highscore]
 # Location where the HTML files will be created
 document_root=../www
+# Base URL if you install twitter-highscore in a subfolder
+base_url=
 # Minimum time in hours that has to pass since last update of twitter user
 # profile before updating the profile again
 fetch_interval=23
