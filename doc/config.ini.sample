@@ -45,7 +45,7 @@ site_name=My Twitter Highscore
 # Headline of generated pages
 headline=My Twitter Highscore
 # Slogan of the site put below headline
-slogan=These people should switch to <a href="http://status.net">Status.Net</a>
+slogan=These people should switch to <a href="http://gnu.io">GNU Social</a>
 # Text that is shown in front of sorting options
 menu_intro=Alternative Sorting Orders:
 # Chart comparison intro text
