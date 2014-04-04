@@ -283,8 +283,8 @@ def print_highscore(highscore, print_score, path, title='', print_users=False):
         f.write('<td class="pos">' + str(position) + '</td>')
         if(config.getboolean('Twitter Highscore', 'use_rank') and print_users):
             f.write('<td class="diff">' +
-                    ('<img src="/eq.png"/>' if position == user['old_rank'] else '<img src="/down.png"/>'
-                        if position > user['old_rank'] else '<img src="/up.png"/>') + '</td>')
+                    ('<img src="' + base_url + '/eq.png"/>' if position == user['old_rank'] else '<img src="' + base_url + '/down.png"/>'
+                        if position > user['old_rank'] else '<img src="' + base_url  + '/up.png"/>') + '</td>')
         f.write('<td><a href="' +config.get('Twitter Highscore', 'base_url') + '/' + user['screen_name'] + '"><img src="' + user['profile_image_url'] + '"/></a></td>')
         f.write('<td>' + user['name'].encode('ascii', 'xmlcharrefreplace') + ' (<a href="https://twitter.com/'+user['screen_name']+'">@' + user['screen_name'] + '</a>)</td>')
         print_score(f, user)
