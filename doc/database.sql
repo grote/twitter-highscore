@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `old_rank` int(11) unsigned NOT NULL DEFAULT '4294967295',
   `created_at` datetime NOT NULL,
   `fetch_time` datetime NOT NULL,
-  `invisible` tinyint(1) NOT NULL,
+  `invisible` tinyint(1) NOT NULL DEFAULT '0',
   UNIQUE KEY `id` (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
