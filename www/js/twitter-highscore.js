@@ -21,7 +21,7 @@ palette.scheme = [ '#FF8800', '#6193AE', '#FF0000', '#00FF00', 'FF00FF', '#0006B
 
 function add_twitter_user(user) {
     $.ajax({
-        url: '/user/' + user.toLowerCase() + '.json',
+        url: 'user/' + user.toLowerCase() + '.json',
         dataType: 'json',
         async: true,
         success: function(data) { add_twitter_line(user, data); },
@@ -70,7 +70,7 @@ $(function() {
     } );
 
     // Enable Auto-complete
-    $.getJSON('/user_list.json', function(data) {
+    $.getJSON('user_list.json', function(data) {
         $('input[name="twitter_user"]').autocomplete({
             source: data
         } );

@@ -369,7 +369,7 @@ def print_user_page(user, score):
         f.write('<script language="javascript" type="text/javascript">')
         f.write('''var chart_data, legend;
 $.ajax({
-    url: '/user/%(screen_name)s.json'.toLowerCase(),
+    url: 'user/%(screen_name)s.json'.toLowerCase(),
     dataType: 'json',
     async: false,
     success: function(data) {
